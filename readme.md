@@ -100,7 +100,7 @@ streamlit run dashboard/app.py
 
 ### Dashboard Home
 
-![Dashboard Home](screenshots/dashboard-home.png)
+![Dashboard Home](screenshots/dashboard-home)
 
 ---
 
