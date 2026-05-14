@@ -96,6 +96,18 @@ streamlit run dashboard/app.py
 
 ---
 
+## Screenshots
+
+### Dashboard
+
+![Dashboard](screenshots/dashboard.png)
+
+### API Documentation
+
+![API Docs](screenshots/api-docs.png)
+
+---
+
 ## Author
 
 Prakash Shrijal

@@ -41,20 +41,14 @@ async def predict_fraud(transaction: Transaction):
         "fraud_analysis": fraud_result
     }
 
-@router.get(
-    "/transactions",
-    dependencies=[Depends(JWTBearer())]
-)
+@router.get("/transactions")
 def get_transactions():
 
     transactions = get_all_transactions()
 
     return transactions
 
-@router.get(
-    "/analytics",
-    dependencies=[Depends(JWTBearer())]
-)
+@router.get("/analytics")
 def analytics():
 
     result = get_analytics()
