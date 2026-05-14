@@ -98,14 +98,45 @@ streamlit run dashboard/app.py
 
 ## Screenshots
 
-### Dashboard
+### Dashboard Home
 
-![Dashboard](screenshots/dashboard.png)
+![Dashboard Home](screenshots/dashboard-home.png)
 
-### API Documentation
+---
 
-![API Docs](screenshots/api-docs.png)
+### Live Fraud Alerts
 
+![Fraud Alerts](screenshots/analytics-chart1.png)
+
+---
+
+### Analytics Dashboard
+
+![Analytics](screenshots/analytics-chart.png)
+
+---
+
+### Transaction History
+
+![Transactions](screenshots/transaction-history.png)
+
+---
+
+### Login API
+
+![Login API](screenshots/swagger-home.png)
+
+---
+
+### Fraud Prediction API
+
+![Predict API](screenshots/swagger-predict.png)
+
+---
+
+### Transactions API
+
+![Transactions API](screenshots/swagger-predict1.png)
 ---
 
 ## Author
