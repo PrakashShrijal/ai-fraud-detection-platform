@@ -94,59 +94,66 @@ col4.metric(
     f"{analytics['fraud_percentage']}%"
 )
 
-df = pd.DataFrame(transactions)
+EXPECTED_COLUMNS = ["amount", "hour", "is_new_receiver", "tx_count_last_1hr",
+                    "risk_score", "risk_level", "ml_prediction"]
+
+# Build DataFrame — handle empty DB on first deploy
+if transactions and isinstance(transactions[0], dict):
+    df = pd.DataFrame(transactions)
+else:
+    df = pd.DataFrame(columns=EXPECTED_COLUMNS)
+
+# Ensure all expected columns exist even if DB returns partial data
+for col in EXPECTED_COLUMNS:
+    if col not in df.columns:
+        df[col] = None
 
 # Live Fraud Alerts
 st.subheader("🚨 Live Fraud Alerts")
 
-high_risk_df = df[df["risk_level"] == "HIGH"]
-
-if not high_risk_df.empty:
-
-    latest_alert = high_risk_df.iloc[-1]
-
-    st.error(f"""
-    HIGH RISK TRANSACTION DETECTED
-
-    Amount: ₹{latest_alert['amount']}
-    Hour: {latest_alert['hour']}
-    ML Prediction: {latest_alert['ml_prediction']}
-    """)
-
+if df.empty:
+    st.info("No transactions yet. Submit a transaction via the /predict API to see alerts here.")
 else:
-    st.success("No high-risk transactions detected.")
+    high_risk_df = df[df["risk_level"] == "HIGH"]
+
+    if not high_risk_df.empty:
+        latest_alert = high_risk_df.iloc[-1]
+        st.error(f"""
+        HIGH RISK TRANSACTION DETECTED
+
+        Amount: ₹{latest_alert['amount']}
+        Hour: {latest_alert['hour']}
+        ML Prediction: {latest_alert['ml_prediction']}
+        """)
+    else:
+        st.success("No high-risk transactions detected.")
 
 st.divider()
 
 # Transactions Table
 st.subheader("📄 Transaction History")
 
+if df.empty:
+    st.info("No transactions recorded yet.")
+else:
+    st.dataframe(df, use_container_width=True)
 
+    # Risk Level Chart
+    st.subheader("📊 Risk Distribution")
+    risk_counts = df["risk_level"].value_counts()
+    risk_chart = px.pie(
+        names=risk_counts.index,
+        values=risk_counts.values,
+        title="Risk Level Distribution"
+    )
+    st.plotly_chart(risk_chart, use_container_width=True)
 
-st.dataframe(df, use_container_width=True)
-
-# Risk Level Chart
-st.subheader("📊 Risk Distribution")
-
-risk_counts = df["risk_level"].value_counts()
-
-risk_chart = px.pie(
-    names=risk_counts.index,
-    values=risk_counts.values,
-    title="Risk Level Distribution"
-)
-
-st.plotly_chart(risk_chart, use_container_width=True)
-
-# ML Prediction Chart
-st.subheader("🤖 ML Prediction Distribution")
-
-ml_counts = df["ml_prediction"].value_counts()
-
-ml_chart = px.bar(
-    x=ml_counts.index,
-    y=ml_counts.values,
-    title="ML Anomaly Detection"
-)
-
-st.plotly_chart(ml_chart, use_container_width=True)
+    # ML Prediction Chart
+    st.subheader("🤖 ML Prediction Distribution")
+    ml_counts = df["ml_prediction"].value_counts()
+    ml_chart = px.bar(
+        x=ml_counts.index,
+        y=ml_counts.values,
+        title="ML Anomaly Detection"
+    )
+    st.plotly_chart(ml_chart, use_container_width=True)

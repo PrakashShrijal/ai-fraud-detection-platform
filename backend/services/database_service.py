@@ -41,7 +41,18 @@ def get_all_transactions():
 
     db.close()
 
-    return transactions
+    return [
+        {
+            "amount": tx.amount,
+            "hour": tx.hour,
+            "is_new_receiver": tx.is_new_receiver,
+            "tx_count_last_1hr": tx.tx_count_last_1hr,
+            "risk_score": tx.risk_score,
+            "risk_level": tx.risk_level,
+            "ml_prediction": tx.ml_prediction,
+        }
+        for tx in transactions
+    ]
 
 def get_analytics():
 
