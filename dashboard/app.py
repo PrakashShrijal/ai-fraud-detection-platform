@@ -3,6 +3,43 @@ import requests
 import pandas as pd
 import plotly.express as px
 from streamlit_autorefresh import st_autorefresh
+import subprocess
+import sys
+import os
+import time
+
+# ── Start FastAPI backend as a background process (once per container) ──────
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+PID_FILE = "/tmp/backend.pid"
+
+def _backend_running():
+    """Check if the backend process is still alive."""
+    if not os.path.exists(PID_FILE):
+        return False
+    try:
+        pid = int(open(PID_FILE).read().strip())
+        os.kill(pid, 0)   # signal 0 = existence check only, no actual signal
+        return True
+    except (ProcessLookupError, ValueError, OSError):
+        return False
+
+if not _backend_running():
+    proc = subprocess.Popen(
+        [sys.executable, "-m", "uvicorn",
+         "backend.main:app",
+         "--host", "0.0.0.0",
+         "--port", "8000"],
+        cwd=ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    with open(PID_FILE, "w") as f:
+        f.write(str(proc.pid))
+    time.sleep(4)   # Give the backend time to initialise
+# ───────────────────────────────────────────────────────────────────────────
 
 st.set_page_config(
     page_title="Fraud Detection Dashboard",
@@ -16,17 +53,23 @@ st_autorefresh(interval=5000, key="dashboard_refresh")
 
 # API URLs
 TRANSACTION_API = "http://127.0.0.1:8000/transactions"
-ANALYTICS_API = "http://127.0.0.1:8000/analytics"
+ANALYTICS_API   = "http://127.0.0.1:8000/analytics"
 
 # Fetch Transactions
-transactions_response = requests.get(TRANSACTION_API)
-
-transactions = transactions_response.json()
+try:
+    transactions_response = requests.get(TRANSACTION_API, timeout=5)
+    transactions = transactions_response.json()
+except Exception:
+    st.warning("⏳ Backend is starting up, please wait a moment...")
+    st.stop()
 
 # Fetch Analytics
-analytics_response = requests.get(ANALYTICS_API)
-
-analytics = analytics_response.json()
+try:
+    analytics_response = requests.get(ANALYTICS_API, timeout=5)
+    analytics = analytics_response.json()
+except Exception:
+    st.warning("⏳ Backend is starting up, please wait a moment...")
+    st.stop()
 
 # Analytics Cards
 col1, col2, col3, col4 = st.columns(4)
